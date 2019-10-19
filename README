@@ -1,0 +1,101 @@
+rmb - raise my blog
+-------------------
+rmb is a simplistic static blog generator written in go.
+
+
+Requirements
+------------
+The preferred compiler is gccgo, version as below or later:
+
+	go version go1.12.2 gccgo (GCC) 9.2.0
+
+Dependencies are bundled in the vendor directory.
+
+
+Installation
+------------
+Run:
+
+	git clone github.com/cmr-informatik/rmb
+	cd rmb
+
+Then:
+
+	go build -mod=vendor
+
+Or:
+
+	go build -mod=vendor -gccgoflags='-static-libgo'
+
+
+Quickstart
+----------
+A few things must be set in a YAML <conf> file:
+	
+	name            Website name which is used as the index page title
+	css-merge-order	CSS files listed in merge/append order where subsequent
+	                files are appended to previous files
+	out             Output path ($out)
+	in              Input path ($in)
+
+Input files are expected to be structured like this: 
+
+	$in/src/*.md    Pages written in markdown w/ YAML header 
+	$in/tmp/page    Page template written in go's text/template syntax
+	$in/css/*.css   CSS files
+	$in/img/*       Image files, copied to $out/img/
+	$in/fonts/*     Font files, copied to $out/fonts/
+
+The $in/tmp/page template file must exist.
+
+Generate a new page (index or post):
+
+	rmb <conf> page
+
+Build the website:
+
+	rmb <conf>
+
+Output files are structured like this:
+
+	$out/index.html Html-rendered and minimized site index
+	$out/*.html     Html-rendered and minimized posts
+	$out/all.css    Merged and minimized CSS file
+	$out/img/*      Stuff copied from $in/img/
+	$out/fonts/*    Stuff copied from $in/fonts/
+
+
+Page Template
+-------------
+Each page exposes several variables for use in the $in/tmp/page template:
+
+	Title           Page title
+	Added           Page creation date as 64b Unix timestamp
+	Index           True if index page else False
+	Body            Minimized HTML page content as a byte slice
+	                (use template 'tostring' function to render)
+
+An index page has some additional variables:
+
+	IndexElems	A slice of all other non-index pages as an IndexElem
+
+Each IndexElem provides these variables:
+
+	Title           Page title
+	Added           Page creation date as 64b Unix timestamp
+	Date            Page creation date in format: 'MMDDYY: '
+	Link            Page HTML filepath relative to $out root
+
+
+Example
+-------
+A simple example is provided in the example branch:
+
+	git checkout example
+	rmb conf
+
+Licensing
+---------
+rmb source code is released under the GNU GPL version 3, except for source
+files located in the vendor directory. Projects in the vendor directory include
+their own licenses separate from rmb.
