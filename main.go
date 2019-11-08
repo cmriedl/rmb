@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/Depado/bfchroma"
+	"github.com/alecthomas/chroma"
 	"github.com/cmr-informatik/front"
 	bf "github.com/russross/blackfriday/v2"
 	"github.com/tdewolff/minify/v2"
@@ -60,11 +61,58 @@ func init() {
 	minifier.AddFunc("text/css", css.Minify)
 }
 
+func loadChromaStyle(f string) *chroma.Style {
+	s := struct {
+		Name   string
+		Styles map[string]string
+	}{}
+
+	data, err := ioutil.ReadFile(f)
+	if perr(err, "") {
+		return nil
+	}
+
+	err = yaml.UnmarshalStrict(data, &s)
+	if perr(err, yamlDecodeErr, f) {
+		return nil
+	}
+
+	var styles = make(chroma.StyleEntries)
+	for k, v := range s.Styles {
+		switch k {
+		case "keyword":
+			styles[chroma.Keyword] = v
+		case "name":
+			styles[chroma.Name] = v
+		case "literal":
+			styles[chroma.Literal] = v
+		case "string":
+			styles[chroma.String] = v
+		case "number":
+			styles[chroma.Number] = v
+		case "operator":
+			styles[chroma.Operator] = v
+		case "punctuation":
+			styles[chroma.Punctuation] = v
+		case "comment":
+			styles[chroma.Comment] = v
+		case "normal":
+			styles[chroma.Background] = v
+		default:
+			stderr("invalid chroma-style option '%s'\n", k)
+			return nil
+		}
+	}
+
+	return chroma.MustNewStyle(s.Name, styles)
+}
+
 type conf struct {
 	Name string
 	CSS  []string `yaml:"css-merge-order"`
 	Out  string
 	In   string
+	Sty  string `yaml:"chroma-style"`
 }
 
 func (c *conf) load(f string) {
@@ -85,6 +133,13 @@ func (c *conf) load(f string) {
 		if d == imgDir || d == fontsDir {
 			err := os.MkdirAll(filepath.Join(c.Out, d), dPerms)
 			kill(err, "")
+		}
+	}
+
+	if c.Sty != "" {
+		s := loadChromaStyle(c.Sty)
+		if s != nil {
+			renderer.Style = s
 		}
 	}
 }
@@ -202,7 +257,7 @@ func renderPage(f string, args *renderFuncArgs) {
 	}
 
 	args.posts <- &indexElem{Title: p.Title, Added: p.Added,
-		Link: p.Filebase+".html"}
+		Link: p.Filebase + ".html"}
 	args.wg.Done()
 }
 

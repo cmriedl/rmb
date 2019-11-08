@@ -65,6 +65,48 @@ Output files are structured like this:
 	$out/fonts/*    Stuff copied from $in/fonts/
 
 
+Syntax Highlighting
+-------------------
+rmb uses chroma (via bfchroma) to render syntax highlighting for code-blocks
+embedded in a page. All highlighting uses inline HTML and CSS elements - no JS.
+
+A path to a custom YAML <chroma-style> file can be set in the YAML <conf> file:
+
+	chroma-style    Path to YAML file with custom chroma style
+
+If the <chroma-style> entry is missing in the YAML <conf> file, then the chroma
+default style is used.
+
+The YAML <chroma-style> file must contain at least a name and a single style:
+
+	name		Style name
+	styles		Token and style pairs
+
+A subset of Pygments tokens are recognized using the same syntax as Pygments to
+describe color and font rules. See http://pygments.org/docs/styles/ and
+http://pygments.org/docs/tokens/.
+
+Recognized tokens:
+
+	keyword
+	name
+	literal
+	string
+	number
+	operator
+	punctuation
+	comment
+	normal
+
+The normal token is special and defines the default which other styles can
+override. The YAML <chroma-style> normal style entry could look like this:
+
+	    normal: "#nnnnnn bg:#nnnnnn"
+	             '--+--'    '--+--'
+	foreground -----'          |
+	background ----------------'
+
+
 Page Template
 -------------
 Each page exposes several variables for use in the $in/tmp/page template:
@@ -93,6 +135,7 @@ A simple example is provided in the example branch:
 
 	git checkout example
 	rmb conf
+
 
 Licensing
 ---------
