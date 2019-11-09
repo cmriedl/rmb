@@ -298,7 +298,7 @@ func compile(c *conf) {
 		os.Exit(1)
 	}
 
-	posts := make(chan *indexElem, npages-1)
+	posts := make(chan *indexElem, npages)
 	index := make(chan *page, 1)
 	// Bundle arguments for renderPage and renderIndex
 	args := renderFuncArgs{c: c, tmp: tmp, index: index, posts: posts,
@@ -328,6 +328,10 @@ func compile(c *conf) {
 	}
 
 	wg.Wait()
+
+	if len(index) != 1 {
+		return
+	}
 
 	// Index
 	renderIndex(&args)
