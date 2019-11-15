@@ -38,7 +38,7 @@ A few things must be set in a YAML <conf> file:
 	out             Output path ($out)
 	in              Input path ($in)
 
-Input files are expected to be structured like this: 
+Input files:
 
 	$in/src/*.md    Pages written in markdown w/ YAML header 
 	$in/tmp/page    Page template written in go's text/template syntax
@@ -48,7 +48,7 @@ Input files are expected to be structured like this:
 
 The $in/tmp/page template file must exist.
 
-Generate a new page (index or post):
+Generate a new page:
 
 	rmb <conf> page
 
@@ -56,7 +56,7 @@ Build the website:
 
 	rmb <conf>
 
-Output files are structured like this:
+Output files:
 
 	$out/index.html Html-rendered and minimized site index
 	$out/*.html     Html-rendered and minimized posts
@@ -114,6 +114,7 @@ Each page exposes several variables for use in the $in/tmp/page template:
 	Title           Page title
 	Added           Page creation date as 64b Unix timestamp
 	Index           True if index page else False
+	Indexed		True if page should be listed in the index
 	Body            Minimized HTML page content as a byte slice
 	                (use template 'tostring' function to render)
 

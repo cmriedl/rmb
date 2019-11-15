@@ -155,6 +155,7 @@ type page struct {
 	Title      string
 	Added      int64
 	Index      bool
+	Indexed    bool
 	IndexElems []*indexElem `yaml:"-"`
 	Body       []byte       `yaml:"-"`
 	Filebase   string
@@ -256,8 +257,10 @@ func renderPage(f string, args *renderFuncArgs) {
 		return
 	}
 
-	args.posts <- &indexElem{Title: p.Title, Added: p.Added,
-		Link: p.Filebase + ".html"}
+	if p.Indexed {
+		args.posts <- &indexElem{Title: p.Title, Added: p.Added,
+			Link: p.Filebase + ".html"}
+	}
 	args.wg.Done()
 }
 
@@ -358,8 +361,7 @@ func main() {
 		scanner := bufio.NewScanner(os.Stdin)
 		stdout("index (y/n): ")
 		scanner.Scan()
-		ans := scanner.Text()
-		if ans == "y" {
+		if scanner.Text() == "y" {
 			p.Title = c.Name
 			p.Index = true
 			p.Filebase = "index"
@@ -367,12 +369,19 @@ func main() {
 			stdout("title (txt): ")
 			scanner.Scan()
 			p.Title = scanner.Text()
+			stdout("indexed (y/n): ")
+			scanner.Scan()
+			if scanner.Text() == "y" {
+				p.Indexed = true
+			} else {
+				p.Indexed = false
+			}
 			p.Added = time.Now().Unix()
 			p.Filebase = unixfy(p.Title)
 		}
 		f := filepath.Join(c.In, srcDir, p.Filebase+".md")
 		p.save(f)
-		stdout("created new post '%s'\n", f)
+		stdout("created new page '%s'\n", f)
 	default:
 		stderr("invalid command '%s'\n", args[1])
 		os.Exit(1)
